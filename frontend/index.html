@@ -281,6 +281,18 @@
   </div>
 
   <script>
+    // Backend URL Configuration
+    // For local development: use 'http://localhost:8080'
+    // For production: use your Render backend URL
+    const BACKEND_URL = (() => {
+      // Auto-detect: if on localhost, use localhost:8080, otherwise use production URL
+      if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+        return 'http://localhost:8080';
+      }
+      // Render backend URL
+      return 'https://four-in-a-row-wb0t.onrender.com';
+    })();
+    
     const statusEl = document.getElementById('status');
     const boardEl = document.getElementById('board');
     const gameInfoEl = document.getElementById('gameInfo');
@@ -297,7 +309,10 @@
     };
 
     function connect() {
-      const url = `ws://${location.hostname}:8080/ws?username=${encodeURIComponent(you)}${gameId ? `&gameId=${gameId}`:''}`;
+      // Use wss:// for HTTPS, ws:// for HTTP
+      const wsProtocol = BACKEND_URL.startsWith('https') ? 'wss' : 'ws';
+      const wsHost = BACKEND_URL.replace(/^https?:\/\//, '');
+      const url = `${wsProtocol}://${wsHost}/ws?username=${encodeURIComponent(you)}${gameId ? `&gameId=${gameId}`:''}`;
       ws = new WebSocket(url);
       ws.onmessage = (evt) => {
         const msg = JSON.parse(evt.data);
@@ -350,8 +365,7 @@
 
     async function loadLeaderboard() {
       try {
-        const protocol = location.protocol === 'https:' ? 'https:' : 'http:';
-        const res = await fetch(`${protocol}//${location.hostname}:8080/leaderboard`);
+        const res = await fetch(`${BACKEND_URL}/leaderboard`);
         if (!res.ok) {
           throw new Error(`HTTP ${res.status}`);
         }
