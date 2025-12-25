@@ -13,7 +13,14 @@ import (
 )
 
 func main() {
-	addr := getEnv("ADDR", ":8080")
+	// Check for PORT first (used by Render, Fly.io, Heroku, etc.)
+	port := os.Getenv("PORT")
+	var addr string
+	if port != "" {
+		addr = ":" + port
+	} else {
+		addr = getEnv("ADDR", ":8080")
+	}
 	botDelay := durationEnv("BOT_DELAY", 10*time.Second)
 	reconnect := durationEnv("RECONNECT_WINDOW", 30*time.Second)
 
